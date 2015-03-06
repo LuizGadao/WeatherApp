@@ -103,16 +103,16 @@ public class Weather {
         this.time = time;
     }
 
-    public double getTemperature() {
-        return temperature;
+    public int getTemperature() {
+        return (int)Math.round( temperature );
     }
 
     public void setTemperature( double temperature ) {
         this.temperature = temperature;
     }
 
-    public double getHumidity() {
-        return humidity;
+    public int getHumidity() {
+        return (int)Math.round( humidity * 100 );
     }
 
     public void setHumidity( double humidity ) {
@@ -120,7 +120,8 @@ public class Weather {
     }
 
     public double getPrecipChance() {
-        return precipChance;
+        double pct = precipChance * 100;
+        return Math.round( pct );
     }
 
     public void setPrecipChance( double precipChance ) {

@@ -11,6 +11,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.luizgadao.stormy.model.Weather;
@@ -22,53 +25,100 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 
 public class StormyActivity extends ActionBarActivity {
 
     private static final String TAG = StormyActivity.class.getSimpleName();
+    private WeatherFragment currentWeatherFragment;
+    @InjectView( R.id.iv_refresh ) ImageView ivRefresh;
+    @InjectView( R.id.progress_bar ) ProgressBar progressBar;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_stormy );
+        ButterKnife.inject( this );
 
         if ( savedInstanceState == null ) {
+            currentWeatherFragment = new WeatherFragment().newInstance();
             getFragmentManager().beginTransaction()
-                    .add( R.id.container, WeatherFragment.newInstance() )
+                    .add( R.id.container, currentWeatherFragment )
                     .commit();
         }
 
-        double latitude = 37.8267;
-        double longitude = -122.423;
+        final double latitude = 37.8267;
+        final double longitude = -122.423;
+        loadData( latitude, longitude );
 
-        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s", getString( R.string.api_key ), latitude, longitude);
-
-        loadData( url );
+        ivRefresh.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                loadData( latitude, longitude );
+            }
+        } );
     }
 
-    private void loadData( String url ) {
+    private void togleProgresBar()
+    {
+        if ( progressBar.getVisibility() == View.INVISIBLE )
+        {
+            progressBar.setVisibility( View.VISIBLE );
+            ivRefresh.setVisibility( View.INVISIBLE );
+        }
+        else
+        {
+            progressBar.setVisibility( View.INVISIBLE );
+            ivRefresh.setVisibility( View.VISIBLE );
+        }
+    }
+
+    private void togleProgressBarUIThread()
+    {
+        runOnUiThread( new Runnable() {
+            @Override
+            public void run() {
+                togleProgresBar();
+            }
+        } );
+    }
+
+    private void loadData( double latitude, double longitude ) {
+        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s", getString( R.string.api_key ), latitude, longitude);
 
         Log.i( TAG, "load url: " + url );
         if ( isNetworkAvailable() )
         {
+            togleProgresBar();
+
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url( url ).build();
             Call call = client.newCall( request );
             call.enqueue( new Callback() {
                 @Override
                 public void onFailure( Request request, IOException e ) {
-
+                    togleProgressBarUIThread();
                 }
 
                 @Override
                 public void onResponse( Response response ) throws IOException {
+                    togleProgressBarUIThread();
                     try {
                         if ( response.isSuccessful() ) {
                             String jsonData = response.body().string();
                             Log.v( TAG, jsonData );
-
-                            Weather weather = Weather.fromJson( jsonData );
+                            final Weather weather = Weather.fromJson( jsonData );
                             Log.i( TAG, "time: " + weather.getFormattedTime() );
+
+                            runOnUiThread( new Runnable() {
+                                @Override
+                                public void run() {
+                                    currentWeatherFragment.updateUi( weather );
+                                }
+                            } );
+
                         }
                         else
                             alertUserAboutError();
@@ -123,11 +173,18 @@ public class StormyActivity extends ActionBarActivity {
 
     public static class WeatherFragment extends Fragment
     {
+        @InjectView( R.id.iv_icon ) ImageView ivIcon;
+        @InjectView( R.id.tv_location ) TextView tvLocation;
+        @InjectView( R.id.tv_summary ) TextView tvSummary;
+        @InjectView( R.id.tv_time ) TextView tvTime;
+        @InjectView( R.id.tv_temperature ) TextView tvTemperature;
+        @InjectView( R.id.tv_humidity_value ) TextView tvHumidity;
+        @InjectView( R.id.tv_rain_value ) TextView tvRain;
 
         public WeatherFragment() {
         }
 
-        public static Fragment newInstance()
+        public static WeatherFragment newInstance()
         {
             WeatherFragment weatherFragment = new WeatherFragment();
             return weatherFragment;
@@ -137,8 +194,20 @@ public class StormyActivity extends ActionBarActivity {
         public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ) {
 
             View view = inflater.inflate( R.layout.fragment_weather, container, false );
+            ButterKnife.inject( this, view );
 
             return view;
+        }
+
+        public void updateUi( Weather weather )
+        {
+            ivIcon.setImageResource( weather.getIconId() );
+            tvTime.setText( "At " + weather.getFormattedTime() + " it will be." );
+            tvLocation.setText( weather.getTimeZone() );
+            tvSummary.setText( weather.getSummary() );
+            tvTemperature.setText( weather.getTemperature() + "" );
+            tvHumidity.setText( weather.getHumidity() + "%" );
+            tvRain.setText( weather.getPrecipChance() + "%" );
         }
     }
 }
