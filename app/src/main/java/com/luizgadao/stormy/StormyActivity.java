@@ -174,6 +174,7 @@ public class StormyActivity extends ActionBarActivity {
     public static class WeatherFragment extends Fragment
     {
         @InjectView( R.id.iv_icon ) ImageView ivIcon;
+        @InjectView( R.id.iv_degree ) ImageView ivDegree;
         @InjectView( R.id.tv_location ) TextView tvLocation;
         @InjectView( R.id.tv_summary ) TextView tvSummary;
         @InjectView( R.id.tv_time ) TextView tvTime;
