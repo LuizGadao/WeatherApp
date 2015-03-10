@@ -7,4 +7,6 @@
     <string name="error_title">Oops Sorry!</string>
     <string name="error_message">Please try again.</string>
     <string name="network_unvailable">Network is unvailable!</string>
+    <string name="title_activity_daily">DailyActivity</string>
+    <string name="empty_list_daily">Empty data daily</string>
 </resources>

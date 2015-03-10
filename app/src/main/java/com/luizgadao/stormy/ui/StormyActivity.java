@@ -1,6 +1,7 @@
 package com.luizgadao.stormy.ui;
 
 import android.app.Fragment;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import java.io.IOException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 
 
 public class StormyActivity extends ActionBarActivity {
@@ -211,6 +213,13 @@ public class StormyActivity extends ActionBarActivity {
             tvTemperature.setText( weather.getTemperature() + "" );
             tvHumidity.setText( weather.getHumidity() + "%" );
             tvRain.setText( weather.getPrecipChance() + "%" );
+        }
+
+        @OnClick( R.id.bt_daily )
+        public void startDailyActivity()
+        {
+            Intent intent = new Intent( getActivity(), DailyActivity.class );
+            startActivity( intent );
         }
     }
 }
