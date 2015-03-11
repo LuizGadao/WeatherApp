@@ -35,6 +35,8 @@ public class StormyActivity extends ActionBarActivity {
 
     private static final String TAG = StormyActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "daily_forecast";
+    public static final String HOURLY_FORECAST = "hourly_forecast";
+
 
     private WeatherFragment currentWeatherFragment;
     @InjectView( R.id.iv_refresh ) ImageView ivRefresh;
@@ -203,6 +205,14 @@ public class StormyActivity extends ActionBarActivity {
         {
             Intent intent = new Intent( getActivity(), DailyActivity.class );
             intent.putExtra( DAILY_FORECAST, forecast.getDays() );
+            startActivity( intent );
+        }
+
+        @OnClick( R.id.bt_hourly )
+        public void startHourlyActivity()
+        {
+            Intent intent = new Intent( getActivity(), HourlyActivity.class );
+            intent.putExtra( HOURLY_FORECAST, forecast.getDays() );
             startActivity( intent );
         }
 

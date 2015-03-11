@@ -60,7 +60,13 @@ public class DayAdapter extends BaseAdapter {
         Day day = days[position];
         viewHolder.ivIcon.setImageResource( day.getIconId() );
         viewHolder.tvTemperature.setText( day.getTemperatureMax() + "" );
-        viewHolder.tvDay.setText( day.getDayOfTheWeek() );
+
+        if ( position == 0 )
+            viewHolder.tvDay.setText( "Today" );
+        else if ( position == 1 )
+            viewHolder.tvDay.setText( "Tomorrow" );
+        else
+            viewHolder.tvDay.setText( day.getDayOfTheWeek() );
 
         return convertView;
     }

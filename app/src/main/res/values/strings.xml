@@ -9,4 +9,5 @@
     <string name="network_unvailable">Network is unvailable!</string>
     <string name="title_activity_daily">DailyActivity</string>
     <string name="empty_list_daily">Empty data daily</string>
+    <string name="title_activity_hourly">HourlyActivity</string>
 </resources>
