@@ -1,19 +1,27 @@
 package com.luizgadao.stormy.model.weather;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 /**
  * Created by luizcarlos on 10/03/15.
  */
-public class Day {
+public class Day implements Parcelable {
 
     private long time;
     private String summary;
     private double temperatureMax;
-    private String timeZone;
     private String icon;
+
+    public Day(){ }
 
     public long getTime() {
         return time;
@@ -31,20 +39,12 @@ public class Day {
         this.summary = summary;
     }
 
-    public double getTemperatureMax() {
-        return temperatureMax;
+    public int getTemperatureMax() {
+        return (int) Math.round( temperatureMax );
     }
 
     public void setTemperatureMax( double temperatureMax ) {
         this.temperatureMax = temperatureMax;
-    }
-
-    public String getTimeZone() {
-        return timeZone;
-    }
-
-    public void setTimeZone( String timeZone ) {
-        this.timeZone = timeZone;
     }
 
     public String getIcon() {
@@ -74,4 +74,49 @@ public class Day {
 
         return days;
     }
+
+    public int getIconId() {
+        return Forecast.getIconId( icon );
+    }
+
+    public String getDayOfTheWeek() {
+        SimpleDateFormat dataFormat = new SimpleDateFormat( "EEEE" );
+        dataFormat.setTimeZone( TimeZone.getTimeZone( Weather.timeZone ) );
+
+        Date date = new Date( time * 1000 );
+        return dataFormat.format( date );
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel( Parcel dest, int flags ) {
+        dest.writeLong( time );
+        dest.writeString( summary );
+        dest.writeDouble( temperatureMax );
+        dest.writeString( icon );
+    }
+
+    private Day(Parcel in)
+    {
+        time = in.readLong();
+        summary = in.readString();
+        temperatureMax = in.readDouble();
+        icon = in.readString();
+    }
+
+    public static final Creator<Day> CREATOR = new Creator<Day>() {
+        @Override
+        public Day createFromParcel( Parcel source ) {
+            return new Day( source );
+        }
+
+        @Override
+        public Day[] newArray( int size ) {
+            return new Day[ size ];
+        }
+    };
 }

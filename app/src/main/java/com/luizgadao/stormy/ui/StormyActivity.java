@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -36,6 +34,8 @@ import butterknife.OnClick;
 public class StormyActivity extends ActionBarActivity {
 
     private static final String TAG = StormyActivity.class.getSimpleName();
+    public static final String DAILY_FORECAST = "daily_forecast";
+
     private WeatherFragment currentWeatherFragment;
     @InjectView( R.id.iv_refresh ) ImageView ivRefresh;
     @InjectView( R.id.progress_bar ) ProgressBar progressBar;
@@ -113,13 +113,14 @@ public class StormyActivity extends ActionBarActivity {
                         if ( response.isSuccessful() ) {
                             String jsonData = response.body().string();
                             Log.v( TAG, jsonData );
-                            final Forecast forecast = Forecast.fromJson( jsonData );
+                            Forecast forecast = Forecast.fromJson( jsonData );
                             Log.i( TAG, "time: " + forecast.getCurrentWeather().getFormattedTime() );
 
+                            currentWeatherFragment.setForecast( forecast );
                             runOnUiThread( new Runnable() {
                                 @Override
                                 public void run() {
-                                    currentWeatherFragment.updateUi( forecast.getCurrentWeather() );
+                                    currentWeatherFragment.updateUi();
                                 }
                             } );
 
@@ -153,28 +154,6 @@ public class StormyActivity extends ActionBarActivity {
         return false;
     }
 
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu ) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate( R.menu.menu_stormy, menu );
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item ) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if ( id == R.id.action_settings ) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected( item );
-    }
-
     public static class WeatherFragment extends Fragment
     {
         @InjectView( R.id.iv_icon ) ImageView ivIcon;
@@ -185,6 +164,8 @@ public class StormyActivity extends ActionBarActivity {
         @InjectView( R.id.tv_temperature ) TextView tvTemperature;
         @InjectView( R.id.tv_humidity_value ) TextView tvHumidity;
         @InjectView( R.id.tv_rain_value ) TextView tvRain;
+
+        private Forecast forecast;
 
         public WeatherFragment() {
         }
@@ -204,11 +185,13 @@ public class StormyActivity extends ActionBarActivity {
             return view;
         }
 
-        public void updateUi( Weather weather )
+        public void updateUi()
         {
+            Weather weather = forecast.getCurrentWeather();
+
             ivIcon.setImageResource( weather.getIconId() );
             tvTime.setText( "At " + weather.getFormattedTime() + " it will be." );
-            tvLocation.setText( weather.getTimeZone() );
+            tvLocation.setText( Weather.timeZone );
             tvSummary.setText( weather.getSummary() );
             tvTemperature.setText( weather.getTemperature() + "" );
             tvHumidity.setText( weather.getHumidity() + "%" );
@@ -219,7 +202,16 @@ public class StormyActivity extends ActionBarActivity {
         public void startDailyActivity()
         {
             Intent intent = new Intent( getActivity(), DailyActivity.class );
+            intent.putExtra( DAILY_FORECAST, forecast.getDays() );
             startActivity( intent );
+        }
+
+        public Forecast getForecast() {
+            return forecast;
+        }
+
+        public void setForecast( Forecast forecast ) {
+            this.forecast = forecast;
         }
     }
 }

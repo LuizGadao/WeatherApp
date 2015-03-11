@@ -1,7 +1,5 @@
 package com.luizgadao.stormy.model.weather;
 
-import com.luizgadao.stormy.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +12,9 @@ import java.util.TimeZone;
  */
 public class Weather {
 
-    private String icon, summary, timeZone;
+    public static String timeZone;
+
+    private String icon, summary;
     private long time;
     private double temperature, humidity, precipChance;
 
@@ -45,40 +45,7 @@ public class Weather {
 
     public int getIconId()
     {
-        int iconId = 0;
-
-        if (icon.equals("clear-day")) {
-            iconId = R.drawable.clear_day;
-        }
-        else if (icon.equals("clear-night")) {
-            iconId = R.drawable.clear_night;
-        }
-        else if (icon.equals("rain")) {
-            iconId = R.drawable.rain;
-        }
-        else if (icon.equals("snow")) {
-            iconId = R.drawable.snow;
-        }
-        else if (icon.equals("sleet")) {
-            iconId = R.drawable.sleet;
-        }
-        else if (icon.equals("wind")) {
-            iconId = R.drawable.wind;
-        }
-        else if (icon.equals("fog")) {
-            iconId = R.drawable.fog;
-        }
-        else if (icon.equals("cloudy")) {
-            iconId = R.drawable.cloudy;
-        }
-        else if (icon.equals("partly-cloudy-day")) {
-            iconId = R.drawable.partly_cloudy;
-        }
-        else if (icon.equals("partly-cloudy-night")) {
-            iconId = R.drawable.cloudy_night;
-        }
-
-        return iconId;
+        return Forecast.getIconId( icon );
     }
 
     public void setSummary( String summary ) {
@@ -128,14 +95,6 @@ public class Weather {
         this.precipChance = precipChance;
     }
 
-    public String getTimeZone() {
-        return timeZone;
-    }
-
-    public void setTimeZone( String timeZone ) {
-        this.timeZone = timeZone;
-    }
-
     /*
         currently: {
             time: 1425577062,
@@ -159,11 +118,10 @@ public class Weather {
          */
     public static Weather fromJson(String stringJson) throws JSONException {
         JSONObject forecast = new JSONObject( stringJson );
-        String timeZone = forecast.getString( "timezone" );
+        Weather.timeZone = forecast.getString( "timezone" );
 
         JSONObject currently = forecast.getJSONObject( "currently" );
         Weather weather = new Weather();
-        weather.setTimeZone( timeZone );
         weather.setHumidity( currently.getDouble( "humidity" ) );
         weather.setTime( currently.getLong( "time" ) );
         weather.setIcon( currently.getString( "icon" ) );

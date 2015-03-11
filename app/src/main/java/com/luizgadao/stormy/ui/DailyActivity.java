@@ -2,9 +2,13 @@ package com.luizgadao.stormy.ui;
 
 import android.app.ListActivity;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
+import android.os.Parcelable;
 
 import com.luizgadao.stormy.R;
+import com.luizgadao.stormy.adapter.DayAdapter;
+import com.luizgadao.stormy.model.weather.Day;
+
+import java.util.Arrays;
 
 public class DailyActivity extends ListActivity {
 
@@ -13,9 +17,11 @@ public class DailyActivity extends ListActivity {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_daily );
 
-        String[] daysOfTheWeek = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+        Day[] days;
+        Parcelable[] parcelable = getIntent().getParcelableArrayExtra( StormyActivity.DAILY_FORECAST );
+        days = Arrays.copyOf( parcelable, parcelable.length, Day[].class );
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>( this, android.R.layout.simple_list_item_1, daysOfTheWeek );
+        DayAdapter adapter = new DayAdapter( this, days );
         setListAdapter( adapter );
     }
 }
