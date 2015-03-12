@@ -212,7 +212,7 @@ public class StormyActivity extends ActionBarActivity {
         public void startHourlyActivity()
         {
             Intent intent = new Intent( getActivity(), HourlyActivity.class );
-            intent.putExtra( HOURLY_FORECAST, forecast.getDays() );
+            intent.putExtra( HOURLY_FORECAST, forecast.getHours() );
             startActivity( intent );
         }
 

@@ -16,7 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.luizgadao.stormy.model.Weather;
+import com.luizgadao.stormy.model.weather.Weather;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -204,7 +204,7 @@ public class StormyActivity extends ActionBarActivity {
         {
             ivIcon.setImageResource( weather.getIconId() );
             tvTime.setText( "At " + weather.getFormattedTime() + " it will be." );
-            tvLocation.setText( weather.getTimeZone() );
+            tvLocation.setText( Weather.timeZone );
             tvSummary.setText( weather.getSummary() );
             tvTemperature.setText( weather.getTemperature() + "" );
             tvHumidity.setText( weather.getHumidity() + "%" );
