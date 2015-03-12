@@ -1,6 +1,7 @@
 package com.luizgadao.stormy.adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +46,7 @@ public class HourAdapter extends RecyclerView.Adapter<HourAdapter.HourViewHolder
         return hours.length;
     }
 
-    public class HourViewHolder extends RecyclerView.ViewHolder{
+    public class HourViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @InjectView( R.id.tv_time )
         TextView tvTime;
@@ -59,6 +60,8 @@ public class HourAdapter extends RecyclerView.Adapter<HourAdapter.HourViewHolder
         public HourViewHolder( View view ) {
             super( view );
             ButterKnife.inject( this, view );
+
+            view.setOnClickListener( this );
         }
 
         public void bind( Hour hour )
@@ -67,6 +70,11 @@ public class HourAdapter extends RecyclerView.Adapter<HourAdapter.HourViewHolder
             tvTemperature.setText( hour.getTemperature() + "" );
             tvSummary.setText( hour.getSummary() );
             ivIcon.setImageResource( hour.getIcon() );
+        }
+
+        @Override
+        public void onClick( View v ) {
+            Log.i( "ViewHolder", "click" );
         }
     }
 }
