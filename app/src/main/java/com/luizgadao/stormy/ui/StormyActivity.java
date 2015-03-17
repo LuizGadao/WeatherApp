@@ -17,7 +17,9 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.luizgadao.stormy.R;
+import com.luizgadao.stormy.app.App;
 import com.luizgadao.stormy.model.weather.Forecast;
 import com.luizgadao.stormy.model.weather.Weather;
 import com.luizgadao.stormy.utils.Utils;
@@ -28,6 +30,7 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
+import java.util.Date;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -64,11 +67,7 @@ public class StormyActivity extends ActionBarActivity implements
         }
 
         //start google api client
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        buildGoogleApiClient();
 
         imageRotation = new ImageRotation( ivRefresh );
 
@@ -107,7 +106,10 @@ public class StormyActivity extends ActionBarActivity implements
     }
 
     private void loadData( double latitude, double longitude ) {
-        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s", getString( R.string.api_key ), latitude, longitude);
+        Date date = new Date();
+        long unixTime = date.getTime() / 1000;
+
+        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s,%s", getString( R.string.api_key ), latitude, longitude, unixTime);
         imageRotation.start();
 
         Log.i( TAG, "load url: " + url );
@@ -168,10 +170,15 @@ public class StormyActivity extends ActionBarActivity implements
         {
             latitude = lastLocation.getLatitude();
             longitude = lastLocation.getLongitude();
+            App.getApplication().saveLatAndLng( latitude, longitude );
             loadData( latitude, longitude );
         }
-        else
+        else {
             Toast.makeText( this, "GEOLOCATION disabled", Toast.LENGTH_SHORT ).show();
+            LatLng latLng = App.getApplication().getLatLng();
+            if ( latLng != null )
+                loadData( latLng.latitude, latLng.longitude );
+        }
     }
 
     @Override

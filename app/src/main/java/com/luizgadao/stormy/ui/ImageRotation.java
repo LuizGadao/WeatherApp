@@ -23,7 +23,12 @@ public class ImageRotation {
                 while ( rotation ) {
                     angle += 15;
                     angle %= 360;
-                    imageView.setRotation( angle );
+                    imageView.post( new Runnable() {
+                        @Override
+                        public void run() {
+                            imageView.setRotation( angle );
+                        }
+                    } );
 
                     try {
                         Thread.sleep( 25 );
@@ -39,6 +44,11 @@ public class ImageRotation {
     public void pause(){
         rotation = false;
         angle = 0;
-        imageView.setRotation( angle );
+        imageView.post( new Runnable() {
+            @Override
+            public void run() {
+                imageView.setRotation( angle );
+            }
+        } );
     }
 }
