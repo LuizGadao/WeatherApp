@@ -2,8 +2,8 @@ package com.luizgadao.stormy.ui;
 
 import android.app.Fragment;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.content.IntentSender;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -11,13 +11,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.luizgadao.stormy.R;
 import com.luizgadao.stormy.model.weather.Forecast;
 import com.luizgadao.stormy.model.weather.Weather;
+import com.luizgadao.stormy.utils.Utils;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -31,16 +34,21 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 
 
-public class StormyActivity extends ActionBarActivity {
+public class StormyActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = StormyActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "daily_forecast";
     public static final String HOURLY_FORECAST = "hourly_forecast";
+    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
 
+    private GoogleApiClient googleApiClient;
     private WeatherFragment currentWeatherFragment;
+    private ImageRotation imageRotation;
     @InjectView( R.id.iv_refresh ) ImageView ivRefresh;
-    @InjectView( R.id.progress_bar ) ProgressBar progressBar;
+    private double latitude = -1;
+    private double longitude = -1;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -55,62 +63,68 @@ public class StormyActivity extends ActionBarActivity {
                     .commit();
         }
 
-        final double latitude = 37.8267;
-        final double longitude = -122.423;
-        loadData( latitude, longitude );
+        //start google api client
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        imageRotation = new ImageRotation( ivRefresh );
+
+        //latitude = 37.8267;
+        //longitude = -122.423;
+        //loadData( latitude, longitude );
 
         ivRefresh.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
-                loadData( latitude, longitude );
+                if ( latitude != -1 )
+                    loadData( latitude, longitude );
             }
         } );
     }
 
-    private void togleProgresBar()
-    {
-        if ( progressBar.getVisibility() == View.INVISIBLE )
-        {
-            progressBar.setVisibility( View.VISIBLE );
-            ivRefresh.setVisibility( View.INVISIBLE );
-        }
-        else
-        {
-            progressBar.setVisibility( View.INVISIBLE );
-            ivRefresh.setVisibility( View.VISIBLE );
-        }
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
-    private void togleProgressBarUIThread()
-    {
-        runOnUiThread( new Runnable() {
-            @Override
-            public void run() {
-                togleProgresBar();
-            }
-        } );
+    @Override
+    protected void onResume() {
+        super.onResume();
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if ( googleApiClient.isConnected() )
+            googleApiClient.disconnect();
     }
 
     private void loadData( double latitude, double longitude ) {
         String url = String.format("https://api.forecast.io/forecast/%s/%s,%s", getString( R.string.api_key ), latitude, longitude);
+        imageRotation.start();
 
         Log.i( TAG, "load url: " + url );
-        if ( isNetworkAvailable() )
+        if ( Utils.isNetworkAvailable( getBaseContext() ) )
         {
-            togleProgresBar();
-
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url( url ).build();
             Call call = client.newCall( request );
             call.enqueue( new Callback() {
                 @Override
                 public void onFailure( Request request, IOException e ) {
-                    togleProgressBarUIThread();
+                    imageRotation.pause();
                 }
 
                 @Override
                 public void onResponse( Response response ) throws IOException {
-                    togleProgressBarUIThread();
+                    imageRotation.pause();
                     try {
                         if ( response.isSuccessful() ) {
                             String jsonData = response.body().string();
@@ -145,16 +159,41 @@ public class StormyActivity extends ActionBarActivity {
         alert.show( getFragmentManager(), "error_dialog" );
     }
 
-    private boolean isNetworkAvailable()
-    {
-        ConnectivityManager connectivityManager = ( ConnectivityManager ) getSystemService( CONNECTIVITY_SERVICE );
-        NetworkInfo info = connectivityManager.getActiveNetworkInfo();
-
-        if ( info != null & info.isConnected() )
-            return true;
-
-        return false;
+    /*--------------------------------- LOCATION PLAYSERVICE --------------------------------------*/
+    @Override
+    public void onConnected( Bundle bundle ) {
+        Log.i( TAG, "location service connected" );
+        Location lastLocation = LocationServices.FusedLocationApi.getLastLocation( googleApiClient );
+        if ( lastLocation != null )
+        {
+            latitude = lastLocation.getLatitude();
+            longitude = lastLocation.getLongitude();
+            loadData( latitude, longitude );
+        }
+        else
+            Toast.makeText( this, "GEOLOCATION disabled", Toast.LENGTH_SHORT ).show();
     }
+
+    @Override
+    public void onConnectionSuspended( int i ) {
+        Log.i( TAG, "location service suspend." );
+
+    }
+
+    @Override
+    public void onConnectionFailed( ConnectionResult connectionResult ) {
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST );
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
 
     public static class WeatherFragment extends Fragment
     {

@@ -10,15 +10,6 @@
                  tools:context="br.com.luizgadao.StormyActivity"
                  tools:ignore="MergeRootFrame"/>
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"/>
-
     <ImageView
         android:id="@+id/iv_refresh"
         android:layout_width="wrap_content"
