@@ -10,4 +10,6 @@
     <string name="title_activity_daily">DailyActivity</string>
     <string name="empty_list_daily">Empty data daily</string>
     <string name="title_activity_hourly">HourlyActivity</string>
+    <string name="attention">Attention</string>
+    <string name="message_alert_attention">Your geolocation is disabled, are you wish enable?</string>
 </resources>

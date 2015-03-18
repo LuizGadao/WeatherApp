@@ -1,10 +1,14 @@
 package com.luizgadao.stormy.ui;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,7 +34,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.util.Date;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -52,6 +55,7 @@ public class StormyActivity extends ActionBarActivity implements
     @InjectView( R.id.iv_refresh ) ImageView ivRefresh;
     private double latitude = -1;
     private double longitude = -1;
+    private boolean firstExe;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -71,10 +75,6 @@ public class StormyActivity extends ActionBarActivity implements
 
         imageRotation = new ImageRotation( ivRefresh );
 
-        //latitude = 37.8267;
-        //longitude = -122.423;
-        //loadData( latitude, longitude );
-
         ivRefresh.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
@@ -82,6 +82,9 @@ public class StormyActivity extends ActionBarActivity implements
                     loadData( latitude, longitude );
             }
         } );
+
+        if ( savedInstanceState != null )
+            firstExe = savedInstanceState.getBoolean( "first_exe" );
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -106,10 +109,8 @@ public class StormyActivity extends ActionBarActivity implements
     }
 
     private void loadData( double latitude, double longitude ) {
-        Date date = new Date();
-        long unixTime = date.getTime() / 1000;
 
-        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s,%s", getString( R.string.api_key ), latitude, longitude, unixTime);
+        String url = String.format("https://api.forecast.io/forecast/%s/%s,%s", getString( R.string.api_key ), latitude, longitude);
         imageRotation.start();
 
         Log.i( TAG, "load url: " + url );
@@ -171,13 +172,12 @@ public class StormyActivity extends ActionBarActivity implements
             latitude = lastLocation.getLatitude();
             longitude = lastLocation.getLongitude();
             App.getApplication().saveLatAndLng( latitude, longitude );
+            // load data with current location user
             loadData( latitude, longitude );
         }
         else {
-            Toast.makeText( this, "GEOLOCATION disabled", Toast.LENGTH_SHORT ).show();
-            LatLng latLng = App.getApplication().getLatLng();
-            if ( latLng != null )
-                loadData( latLng.latitude, latLng.longitude );
+            if ( ! firstExe )
+                createAlertDialog();
         }
     }
 
@@ -201,6 +201,48 @@ public class StormyActivity extends ActionBarActivity implements
         }
     }
 
+    /*--------------------------------- END LOCATION PLAYSERVICE --------------------------------------*/
+
+    private void createAlertDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder( this );
+        builder.setTitle( getString( R.string.attention) )
+                .setMessage( getString( R.string.message_alert_attention) )
+                .setPositiveButton( "Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dialog, int which ) {
+                        Intent intent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS );
+                        startActivity( intent );
+                    }
+                } )
+                .setNegativeButton( "No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick( DialogInterface dialog, int which ) {
+                        LatLng latLng = App.getApplication().getLatLng();
+
+                        //load data with last coord save
+                        if ( latLng != null )
+                            loadData( latLng.latitude, latLng.longitude );
+                        else
+                        {
+                            //load data with default coord
+                            loadData( 37.8267, -122.423 );
+                        }
+                    }
+                } )
+                .setCancelable( false );
+        builder.create().show();
+
+        //Toast.makeText( this, "GEOLOCATION disabled", Toast.LENGTH_SHORT ).show();
+
+    }
+
+    @Override
+    public void onSaveInstanceState( Bundle outState, PersistableBundle outPersistentState ) {
+        super.onSaveInstanceState( outState, outPersistentState );
+
+        outState.putBoolean( "first_exe", true );
+    }
 
     public static class WeatherFragment extends Fragment
     {

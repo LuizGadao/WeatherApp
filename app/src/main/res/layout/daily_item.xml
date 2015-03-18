@@ -38,12 +38,11 @@
         android:id="@+id/tv_temperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="100"
-        android:layout_alignTop="@id/iv_circle"
-        android:layout_alignBottom="@id/iv_circle"
-        android:layout_alignLeft="@id/iv_circle"
-        android:layout_alignRight="@id/iv_circle"
+        tools:text="10"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="12dp"
         android:gravity="center"
-        android:textColor="#f25019"/>
+        android:textColor="#f25019"
+        android:textSize="18dp"/>
 
 </RelativeLayout>
