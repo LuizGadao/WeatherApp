@@ -18,7 +18,7 @@ public class DailyActivity extends ListActivity {
         setContentView( R.layout.activity_daily );
 
         Day[] days;
-        Parcelable[] parcelable = getIntent().getParcelableArrayExtra( StormyActivity.DAILY_FORECAST );
+        Parcelable[] parcelable = getIntent().getParcelableArrayExtra( WeatherFragment.DAILY_FORECAST );
         days = Arrays.copyOf( parcelable, parcelable.length, Day[].class );
 
         DayAdapter adapter = new DayAdapter( this, days );

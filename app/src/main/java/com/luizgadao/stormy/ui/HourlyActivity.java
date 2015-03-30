@@ -28,7 +28,7 @@ public class HourlyActivity extends ActionBarActivity {
 
 
         Hour[] hours;
-        Parcelable[] parcelables = getIntent().getParcelableArrayExtra( StormyActivity.HOURLY_FORECAST );
+        Parcelable[] parcelables = getIntent().getParcelableArrayExtra( WeatherFragment.HOURLY_FORECAST );
         hours  = Arrays.copyOf( parcelables, parcelables.length, Hour[].class );
 
         HourAdapter adapter = new HourAdapter( hours );
