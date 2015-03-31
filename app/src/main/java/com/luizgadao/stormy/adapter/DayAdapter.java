@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.luizgadao.stormy.R;
 import com.luizgadao.stormy.model.weather.Day;
+import com.luizgadao.stormy.utils.Utils;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -59,7 +60,7 @@ public class DayAdapter extends BaseAdapter {
 
         Day day = days[position];
         viewHolder.ivIcon.setImageResource( day.getIconId() );
-        viewHolder.tvTemperature.setText( day.getTemperatureMax() + "" );
+        viewHolder.tvTemperature.setText( Utils.degreeFahrenheitToCelsius( day.getTemperatureMax() ) + "" );
 
         if ( position == 0 )
             viewHolder.tvDay.setText( "Today" );

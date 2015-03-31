@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.luizgadao.stormy.R;
 import com.luizgadao.stormy.model.weather.Hour;
+import com.luizgadao.stormy.utils.Utils;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -67,7 +68,7 @@ public class HourAdapter extends RecyclerView.Adapter<HourAdapter.HourViewHolder
         public void bind( Hour hour )
         {
             tvTime.setText( hour.getHour() );
-            tvTemperature.setText( hour.getTemperature() + "" );
+            tvTemperature.setText( Utils.degreeFahrenheitToCelsius( hour.getTemperature() ) + "" );
             tvSummary.setText( hour.getSummary() );
             ivIcon.setImageResource( hour.getIcon() );
         }

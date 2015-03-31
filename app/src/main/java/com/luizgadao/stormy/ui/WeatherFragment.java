@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.luizgadao.stormy.R;
 import com.luizgadao.stormy.model.weather.Forecast;
 import com.luizgadao.stormy.model.weather.Weather;
+import com.luizgadao.stormy.utils.Utils;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -63,7 +64,7 @@ public class WeatherFragment extends Fragment {
         tvTime.setText( "At " + weather.getFormattedTime() + " it will be." );
         tvLocation.setText( Weather.timeZone );
         tvSummary.setText( weather.getSummary() );
-        tvTemperature.setText( weather.getTemperature() + "" );
+        tvTemperature.setText( Utils.degreeFahrenheitToCelsius( weather.getTemperature() ) + "" );
         tvHumidity.setText( weather.getHumidity() + "%" );
         tvRain.setText( weather.getPrecipChance() + "%" );
     }

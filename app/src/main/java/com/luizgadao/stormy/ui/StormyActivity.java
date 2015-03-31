@@ -21,6 +21,7 @@ import com.luizgadao.stormy.R;
 import com.luizgadao.stormy.app.App;
 import com.luizgadao.stormy.load.LoadDataWether;
 import com.luizgadao.stormy.model.weather.Forecast;
+import com.luizgadao.stormy.utils.Utils;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -81,6 +82,10 @@ public class StormyActivity extends ActionBarActivity implements
     protected void onResume() {
         super.onResume();
         googleApiClient.connect();
+
+        if ( ! Utils.isGooglePlayServiceAvailable( this ) )
+            //load data with default coord 37.8267, -122.423
+            loadData( -18.8830685, -48.2680035 );
     }
 
     @Override
@@ -103,7 +108,7 @@ public class StormyActivity extends ActionBarActivity implements
         loadDataWether.loadData( latitude, longitude, new LoadDataWether.Callback() {
 
             @Override
-            public void onResponse( final Forecast forecast ) {
+                public void onResponse( final Forecast forecast ) {
                 if ( forecast != null )
                 {
                     runOnUiThread( new Runnable() {
